@@ -1,3 +1,4 @@
+from typing.io import BinaryIO
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject
@@ -6,7 +7,7 @@ Gst.init(None)
 GObject.threads_init()
 
 class Player(object):
-    def __init__(self):
+    def __init__(self) -> None:
         self.pipeline = Gst.Pipeline.new('pipeline')
 
         self.appsrc = Gst.ElementFactory.make('appsrc', 'source')
@@ -25,7 +26,7 @@ class Player(object):
 
         self.bus = self.pipeline.get_bus()
 
-        self.file = None
+        self.file = None  # type: BinaryIO
 
     def __need_data(self, appsrc, how_much):
         data = self.file.read(512)
@@ -37,7 +38,7 @@ class Player(object):
             buffer.fill(0, data)
             appsrc.emit('push-buffer', buffer)
 
-    def play(self, file):
+    def play(self, file: BinaryIO) -> None:
         self.file = file
 
         self.pipeline.set_state(Gst.State.PLAYING)
