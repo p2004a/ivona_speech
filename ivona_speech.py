@@ -20,7 +20,8 @@ class Voice(object):
     def from_dict(d: dict):
         return Voice(d['Name'], d['Language'], d['Gender'])
 
-    def __init__(self, name: str=None, language: str=None, gender: str=None) -> None:
+    def __init__(self, name: str=None, language: str=None,
+                 gender: str=None) -> None:
         self.name = name
         self.language = language
         self.gender = gender
@@ -31,7 +32,9 @@ class Voice(object):
 
     def to_dict(self) -> dict:
         d = {}
-        for key, val in [('Name', self.name), ('Language', self.language), ('Gender', self.gender)]:
+        for key, val in [('Name', self.name),
+                         ('Language', self.language),
+                         ('Gender', self.gender)]:
             if val is not None:
                 d[key] = val
         return d
@@ -44,16 +47,20 @@ class IvonaAPIException(Exception):
         self.details = res.json()
 
     def __str__(self) -> str:
-        return '{} {}: {}'.format(self.status_code, self.error_type[0], self.details['Message'])
+        return '{} {}: {}'.format(
+                self.status_code, self.error_type[0], self.details['Message'])
 
 
 class Ivona(object):
-    def __init__(self, access_key: str, secret_key: str, region: Region) -> None:
+    def __init__(self, access_key: str, secret_key: str,
+                 region: Region) -> None:
         self._region = region
         self._session = requests.Session()
-        self._session.auth = AWS4Auth(access_key, secret_key, region.value, 'tts')
+        self._session.auth = AWS4Auth(
+                access_key, secret_key, region.value, 'tts')
 
-    def _do_request(self, action: str, data: dict, stream: bool= False) -> requests.Response:
+    def _do_request(self, action: str, data: dict,
+                    stream: bool= False) -> requests.Response:
         endpoint = 'https://{}/{}'.format(self._region.endpoint(), action)
         res = self._session.post(endpoint, json=data, stream=stream)
 
@@ -62,10 +69,13 @@ class Ivona(object):
 
         return res
 
-    def list_voices(self, name: str=None, language: str=None, gender: str=None) -> List[Voice]:
+    def list_voices(self, name: str=None, language: str=None,
+                    gender: str=None) -> List[Voice]:
         voice_selector = Voice(name, language, gender)
 
-        res = self._do_request('ListVoices', {'Voice': voice_selector.to_dict()})
+        res = self._do_request('ListVoices', {
+                'Voice': voice_selector.to_dict()
+            })
 
         voices = []
         for voice in res.json()['Voices']:
@@ -95,11 +105,17 @@ if __name__ == "__main__":
 
     def main():
         parser = argparse.ArgumentParser('IVONA text-to-speech engine')
-        parser.add_argument('-l', '--language', type=str, help='Voice language (e.g. pl-PL, en-US)')
-        parser.add_argument('-n', '--name', type=str, help='Voice name')
-        parser.add_argument('-g', '--gender', type=str, help='Voice gender (Male or Female)')
-        parser.add_argument('--spelling', dest='spelling', action='store_true', help="Enable spelling (default)")
-        parser.add_argument('--no-spelling', dest='spelling', action='store_false', help="Disable spelling")
+        parser.add_argument('-l', '--language', type=str,
+                            help='Voice language (e.g. pl-PL, en-US)')
+        parser.add_argument('-n', '--name', type=str,
+                            help='Voice name')
+        parser.add_argument('-g', '--gender', type=str,
+                            help='Voice gender (Male or Female)')
+        parser.add_argument('--spelling', dest='spelling',
+                            action='store_true',
+                            help="Enable spelling (default)")
+        parser.add_argument('--no-spelling', dest='spelling',
+                            action='store_false', help="Disable spelling")
         parser.set_defaults(spelling=True)
         args = parser.parse_args()
 
@@ -108,7 +124,9 @@ if __name__ == "__main__":
             os.environ.get('IVONA_SECRET_KEY'),
             Region(os.environ.get('IVONA_REGION', 'eu-west-1')))
 
-        voices = ivona.list_voices(name=args.name, language=args.language, gender=args.gender)
+        voices = ivona.list_voices(name=args.name,
+                                   language=args.language,
+                                   gender=args.gender)
 
         if len(voices) == 0:
             print("No voices with specified criteria.")
@@ -124,9 +142,6 @@ if __name__ == "__main__":
         print("Selected voice:", voice)
 
         player = Player()
-
-        print(args.spelling)
-
         if args.spelling:
             speller = Speller(language=voice.language.split('-')[0])
         while True:

@@ -2,10 +2,12 @@ import aspell
 import re
 from typing.re import Match
 
+
 class Speller(object):
     alphabets = {
         'en': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'pl': 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźżAĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ'
+        'pl': ('aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż'
+               'AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ')
     }
 
     def __init__(self, language: str) -> None:
@@ -13,7 +15,8 @@ class Speller(object):
             raise Exception('Unknown language')
         self.language = language
         self.s = aspell.Speller('lang', language)
-        self.word_re = re.compile('[{}]+'.format(Speller.alphabets[self.language]))
+        self.word_re = re.compile(
+                '[{}]+'.format(Speller.alphabets[self.language]))
 
     def __try_replace(self, m: Match) -> str:
         word = m.group(0)

@@ -6,6 +6,7 @@ from gi.repository import Gst, GObject
 Gst.init(None)
 GObject.threads_init()
 
+
 class Player(object):
     def __init__(self) -> None:
         self.pipeline = Gst.Pipeline.new('pipeline')
@@ -53,6 +54,7 @@ class Player(object):
                 break
 
         self.pipeline.set_state(Gst.State.READY)
+
 
 if __name__ == "__main__":
     player = Player()
