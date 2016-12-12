@@ -1,4 +1,5 @@
-from typing import List, io
+from typing import List
+from typing.io import BinaryIO
 from enum import Enum
 import requests
 from requests_aws4auth import AWS4Auth
@@ -72,7 +73,7 @@ class Ivona(object):
 
         return voices
 
-    def create_speech(self, text: str, voice: Voice) -> io.BinaryIO:
+    def create_speech(self, text: str, voice: Voice) -> BinaryIO:
         data = {
             'Input': {
                 'Data': text,
@@ -90,12 +91,16 @@ if __name__ == "__main__":
     import os
     import argparse
     from mp3_player import Player
+    from spelling import Speller
 
     def main():
         parser = argparse.ArgumentParser('IVONA text-to-speech engine')
         parser.add_argument('-l', '--language', type=str, help='Voice language (e.g. pl-PL, en-US)')
         parser.add_argument('-n', '--name', type=str, help='Voice name')
         parser.add_argument('-g', '--gender', type=str, help='Voice gender (Male or Female)')
+        parser.add_argument('--spelling', dest='spelling', action='store_true', help="Enable spelling (default)")
+        parser.add_argument('--no-spelling', dest='spelling', action='store_false', help="Disable spelling")
+        parser.set_defaults(spelling=True)
         args = parser.parse_args()
 
         ivona = Ivona(
@@ -119,12 +124,21 @@ if __name__ == "__main__":
         print("Selected voice:", voice)
 
         player = Player()
+
+        print(args.spelling)
+
+        if args.spelling:
+            speller = Speller(language=voice.language.split('-')[0])
         while True:
             text = input("").strip()
             if text == '':
                 continue
             elif text in {'.q', '.quit'}:
                 break
+
+            if args.spelling:
+                text = speller.fix(text)
+                print(text)
 
             speech_file = ivona.create_speech(text, voice)
             player.play(speech_file)
