@@ -1,4 +1,4 @@
-from typing import List, Generator
+from typing import List, io
 from enum import Enum
 import requests
 from requests_aws4auth import AWS4Auth
@@ -72,7 +72,7 @@ class Ivona(object):
 
         return voices
 
-    def create_speech(self, text: str, voice: Voice) -> Generator[bytes, None, None]:
+    def create_speech(self, text: str, voice: Voice) -> io.BinaryIO:
         data = {
             'Input': {
                 'Data': text,
@@ -83,13 +83,13 @@ class Ivona(object):
 
         res = self._do_request('CreateSpeech', data, True)
 
-        for chunk in res.iter_content():
-            yield chunk
+        return res.raw
 
 
 if __name__ == "__main__":
     import os
     import argparse
+    from mp3_player import Player
 
     def main():
         parser = argparse.ArgumentParser('IVONA text-to-speech engine')
@@ -118,10 +118,15 @@ if __name__ == "__main__":
 
         print("Selected voice:", voice)
 
-        text = input("text> ")
+        player = Player()
+        while True:
+            text = input("").strip()
+            if text == '':
+                continue
+            elif text in {'.q', '.quit'}:
+                break
 
-        with open('out.mp3', 'wb') as f:
-            for chunk in ivona.create_speech(text, voice):
-                f.write(chunk)
+            speech_file = ivona.create_speech(text, voice)
+            player.play(speech_file)
 
     main()
