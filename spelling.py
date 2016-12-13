@@ -1,8 +1,6 @@
 import aspell
 import itertools
 import unicodedata
-from typing.re import Match
-
 
 class Speller(object):
     def __init__(self, language: str) -> None:
@@ -25,7 +23,7 @@ class Speller(object):
         parts = []
         for k, g in itertools.groupby(sentence, key=Speller.__is_letter):
             part = ''.join(g)
-            if k == 'L':
+            if k is True:
                 part = self.__try_fix(part)
             parts.append(part)
         return ''.join(parts)
