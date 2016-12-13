@@ -1,25 +1,15 @@
 import aspell
-import re
+import itertools
+import unicodedata
 from typing.re import Match
 
 
 class Speller(object):
-    alphabets = {
-        'en': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'pl': ('aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż'
-               'AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ')
-    }
-
     def __init__(self, language: str) -> None:
-        if language not in Speller.alphabets:
-            raise Exception('Unknown language')
         self.language = language
         self.s = aspell.Speller('lang', language)
-        self.word_re = re.compile(
-                '[{}]+'.format(Speller.alphabets[self.language]))
 
-    def __try_replace(self, m: Match) -> str:
-        word = m.group(0)
+    def __try_fix(self, word: str) -> str:
         if self.s.check(word):
             return word
         suggestions = self.s.suggest(word)
@@ -27,5 +17,15 @@ class Speller(object):
             return suggestions[0]
         return word
 
+    @staticmethod
+    def __is_letter(c: str) -> bool:
+        return unicodedata.category(c)[0] == 'L'
+
     def fix(self, sentence: str) -> str:
-        return self.word_re.sub(self.__try_replace, sentence)
+        parts = []
+        for k, g in itertools.groupby(sentence, key=Speller.__is_letter):
+            part = ''.join(g)
+            if k == 'L':
+                part = self.__try_fix(part)
+            parts.append(part)
+        return ''.join(parts)
