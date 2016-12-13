@@ -62,7 +62,7 @@ class Ivona(object):
     def _do_request(self, action: str, data: dict,
                     stream: bool= False) -> requests.Response:
         endpoint = 'https://{}/{}'.format(self._region.endpoint(), action)
-        res = self._session.post(endpoint, json=data, stream=stream)
+        res = self._session.post(endpoint, json=data, stream=stream, timeout=3)
 
         if res.status_code != 200:
             raise IvonaAPIException(res)

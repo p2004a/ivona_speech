@@ -3,7 +3,7 @@ import argparse
 from mp3_player import Player
 from spelling import Speller
 from ivona_api import Ivona, Region
-
+import requests
 
 def main() -> None:
     parser = argparse.ArgumentParser('IVONA TTS reader')
@@ -60,8 +60,13 @@ def main() -> None:
                     text = fixed_text
                     print('fixed:', text)
 
-        speech_file = ivona.create_speech(text, voice)
-        player.play(speech_file)
+        while True:
+            try:
+                speech_file = ivona.create_speech(text, voice)
+                player.play(speech_file)
+                break
+            except requests.Timeout:
+                print("Request timed out, retrying")
 
 
 if __name__ == "__main__":
