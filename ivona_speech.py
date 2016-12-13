@@ -104,7 +104,7 @@ if __name__ == "__main__":
     from spelling import Speller
 
     def main():
-        parser = argparse.ArgumentParser('IVONA text-to-speech engine')
+        parser = argparse.ArgumentParser('IVONA TTS reader')
         parser.add_argument('-l', '--language', type=str,
                             help='Voice language (e.g. pl-PL, en-US)')
         parser.add_argument('-n', '--name', type=str,
@@ -152,8 +152,13 @@ if __name__ == "__main__":
                 break
 
             if args.spelling:
-                text = speller.fix(text)
-                print(text)
+                if text.startswith('!'):
+                    text = text[1:]
+                else:
+                    fixed_text = speller.fix(text)
+                    if text != fixed_text:
+                        text = fixed_text
+                        print('fixed:', text)
 
             speech_file = ivona.create_speech(text, voice)
             player.play(speech_file)
